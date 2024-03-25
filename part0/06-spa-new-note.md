@@ -1,3 +1,6 @@
+# SPA New Note Diagram
+
+```mermaid
 sequenceDiagram
 participant browser
 participant server
@@ -10,3 +13,4 @@ participant server
     deactivate server
 
     Note right of browser: The server recieves the note from the browser and adds it to an array, so in case the page gets reloaded the new note is still there
+```
