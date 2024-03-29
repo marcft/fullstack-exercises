@@ -1,5 +1,23 @@
 import { useState } from 'react'
 
+const BestAnecdote = ({ anecdotes, points }) => {
+  let bestAnecdote
+  let maxVote = 0
+  for (let i = 0; i < points.length; i++) {
+    if (points[i] > maxVote) {
+      maxVote = points[i]
+      bestAnecdote = anecdotes[i]
+    }
+  }
+
+  // Any anecdote have votes
+  if (!bestAnecdote) {
+    return <p>No votes have been done yet</p>
+  }
+
+  return <p>{bestAnecdote}</p>
+}
+
 const App = () => {
   const anecdotes = [
     'If it hurts, do it more often.',
@@ -13,8 +31,36 @@ const App = () => {
   ]
 
   const [selected, setSelected] = useState(0)
+  const [points, setPoints] = useState(Array(8).fill(0))
 
-  return <div>{anecdotes[selected]}</div>
+  const handleNext = () => {
+    let random = Math.trunc(Math.random() * anecdotes.length)
+    if (random == anecdotes.length) random = anecdotes.length - 1
+
+    setSelected(random)
+  }
+
+  const handleVotes = () => {
+    const copy = [...points]
+    copy[selected]++
+    setPoints(copy)
+  }
+
+  return (
+    <>
+      <section>
+        <h2>Anecdote of the day</h2>
+        <p>{anecdotes[selected]}</p>
+        <p>has {points[selected]} votes</p>
+        <button onClick={handleVotes}>vote</button>
+        <button onClick={handleNext}>next anecdote</button>
+      </section>
+      <section>
+        <h2>Anecdote with most votes</h2>
+        <BestAnecdote anecdotes={anecdotes} points={points} />
+      </section>
+    </>
+  )
 }
 
 export default App
