@@ -67,20 +67,40 @@ const App = () => {
 
   const addPerson = (event) => {
     event.preventDefault()
-    if (persons.some((person) => person.name === newName)) {
-      alert(`${newName} is already in phonebook`)
-      return
-    }
 
-    const newPerson = {
-      name: newName,
-      number: newNumber,
+    const existingPerson = persons.find(
+      (person) => person.name.toLowerCase() === newName.trim().toLowerCase()
+    )
+    if (existingPerson) {
+      const confirmed = window.confirm(
+        `${newName} is already added to phonebook, replace the old number with a new one?`
+      )
+      if (!confirmed) return
+
+      const changedPerson = { ...existingPerson, number: newNumber }
+      servicePersons
+        .update(changedPerson.id, changedPerson)
+        .then((returnedPerson) => {
+          setPersons(
+            persons.map((person) =>
+              person.id == changedPerson.id ? returnedPerson : person
+            )
+          )
+          setNewName('')
+          setNewNumber('')
+        })
+    } else {
+      const newPerson = {
+        name: newName.trim(),
+        number: newNumber.trim(),
+      }
+
+      servicePersons.create(newPerson).then((returnedPerson) => {
+        setPersons(persons.concat(returnedPerson))
+        setNewName('')
+        setNewNumber('')
+      })
     }
-    servicePersons.create(newPerson).then((returnedPerson) => {
-      setPersons(persons.concat(returnedPerson))
-      setNewName('')
-      setNewNumber('')
-    })
   }
 
   const deletePerson = (person) => () => {
