@@ -40,11 +40,14 @@ const Person = ({ person }) => {
   return <div>{`${person.name} ${person.number}`}</div>
 }
 
-const ShowPersons = ({ persons }) => {
+const ShowPersons = ({ persons, deletePerson }) => {
   return (
     <div>
       {persons.map((person) => (
-        <Person key={person.name} person={person} />
+        <div key={person.name}>
+          <Person person={person} />
+          <button onClick={deletePerson(person)}>delete</button>
+        </div>
       ))}
     </div>
   )
@@ -80,6 +83,13 @@ const App = () => {
     })
   }
 
+  const deletePerson = (person) => () => {
+    if (!window.confirm(`Delete ${person.name}`)) return
+    servicePersons.remove(person.id).then(() => {
+      setPersons(persons.filter((p) => p.id !== person.id))
+    })
+  }
+
   const handleFilterChange = (event) => {
     setFilter(event.target.value)
   }
@@ -110,7 +120,7 @@ const App = () => {
         addPerson={addPerson}
       />
       <h2>Numbers</h2>
-      <ShowPersons persons={filteredPersons} />
+      <ShowPersons persons={filteredPersons} deletePerson={deletePerson} />
     </div>
   )
 }
