@@ -1,5 +1,38 @@
 import { useState, useEffect } from 'react'
 import servicePersons from './services/persons'
+import './index.css'
+
+const SuccessNotification = ({ message }) => {
+  const successColor = {
+    color: 'green',
+  }
+
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="notification" style={successColor}>
+      {message}
+    </div>
+  )
+}
+
+const ErrorNotification = ({ message }) => {
+  const errorColor = {
+    color: 'red',
+  }
+
+  if (message === null) {
+    return null
+  }
+
+  return (
+    <div className="notification" style={errorColor}>
+      {message}
+    </div>
+  )
+}
 
 const Filter = ({ filterValue, onFilterChange }) => {
   return (
@@ -58,12 +91,45 @@ const App = () => {
   const [filter, setFilter] = useState('')
   const [newName, setNewName] = useState('')
   const [newNumber, setNewNumber] = useState('')
+  const [successMessage, setSuccessMessage] = useState(null)
+  const [errorMessage, setErrorMessage] = useState(null)
 
   useEffect(() => {
     servicePersons.getAll().then((initialPersons) => {
       setPersons(initialPersons)
     })
   }, [])
+
+  const changeNumber = (existingPerson) => {
+    const confirmed = window.confirm(
+      `${newName} is already added to phonebook, replace the old number with a new one?`
+    )
+    if (!confirmed) return
+
+    const changedPerson = { ...existingPerson, number: newNumber }
+    servicePersons
+      .update(existingPerson.id, changedPerson)
+      .then((returnedPerson) => {
+        setPersons(
+          persons.map((person) =>
+            person.id == changedPerson.id ? returnedPerson : person
+          )
+        )
+        setNewName('')
+        setNewNumber('')
+        setSuccessMessage(
+          `${changedPerson.name}'s number successfully changed to ${changedPerson.number}`
+        )
+        setTimeout(() => setSuccessMessage(null), 5000)
+      })
+      .catch(() => {
+        setErrorMessage(
+          `Information of ${changedPerson.name} has already been removed from server`
+        )
+        setTimeout(() => setErrorMessage(null), 5000)
+        setPersons(persons.filter((p) => p.id !== changedPerson.id))
+      })
+  }
 
   const addPerson = (event) => {
     event.preventDefault()
@@ -72,23 +138,7 @@ const App = () => {
       (person) => person.name.toLowerCase() === newName.trim().toLowerCase()
     )
     if (existingPerson) {
-      const confirmed = window.confirm(
-        `${newName} is already added to phonebook, replace the old number with a new one?`
-      )
-      if (!confirmed) return
-
-      const changedPerson = { ...existingPerson, number: newNumber }
-      servicePersons
-        .update(changedPerson.id, changedPerson)
-        .then((returnedPerson) => {
-          setPersons(
-            persons.map((person) =>
-              person.id == changedPerson.id ? returnedPerson : person
-            )
-          )
-          setNewName('')
-          setNewNumber('')
-        })
+      changeNumber(existingPerson)
     } else {
       const newPerson = {
         name: newName.trim(),
@@ -99,6 +149,10 @@ const App = () => {
         setPersons(persons.concat(returnedPerson))
         setNewName('')
         setNewNumber('')
+        setSuccessMessage(
+          `${returnedPerson.name} has been successfully added to phonebook`
+        )
+        setTimeout(() => setSuccessMessage(null), 5000)
       })
     }
   }
@@ -130,6 +184,8 @@ const App = () => {
   return (
     <div>
       <h1>Phonebook</h1>
+      <SuccessNotification message={successMessage} />
+      <ErrorNotification message={errorMessage} />
       <Filter filterValue={filter} onFilterChange={handleFilterChange} />
       <h2>Add a new</h2>
       <PersonForm
