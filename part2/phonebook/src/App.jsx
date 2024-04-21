@@ -1,38 +1,9 @@
 import { useState, useEffect } from 'react'
 import servicePersons from './services/persons'
-import './index.css'
-
-const SuccessNotification = ({ message }) => {
-  const successColor = {
-    color: 'green',
-  }
-
-  if (message === null) {
-    return null
-  }
-
-  return (
-    <div className="notification" style={successColor}>
-      {message}
-    </div>
-  )
-}
-
-const ErrorNotification = ({ message }) => {
-  const errorColor = {
-    color: 'red',
-  }
-
-  if (message === null) {
-    return null
-  }
-
-  return (
-    <div className="notification" style={errorColor}>
-      {message}
-    </div>
-  )
-}
+import {
+  SuccessNotification,
+  ErrorNotification,
+} from './components/Notification'
 
 const Filter = ({ filterValue, onFilterChange }) => {
   return (
