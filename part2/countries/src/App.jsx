@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react'
 
 import serviceCountries from './services/countries'
+import serviceWeather from './services/weather'
 
-const PossibleCountries = ({ countries }) => {
+const PossibleCountries = ({ countries, onClick }) => {
   if (countries.length === 1) return null
   if (countries.length > 10) {
     return <p>Too many matches, specify another filter</p>
@@ -11,7 +12,10 @@ const PossibleCountries = ({ countries }) => {
   return (
     <ul>
       {countries.map((country) => (
-        <li key={country.name}>{country.name}</li>
+        <li key={country.name}>
+          <div style={{ display: 'inline-block' }}>{country.name}</div>
+          <button onClick={onClick(country)}>show</button>
+        </li>
       ))}
     </ul>
   )
@@ -38,9 +42,23 @@ const CountryInfo = ({ countries }) => {
   )
 }
 
+const WeatherInfo = ({ weather }) => {
+  if (weather == null) return
+
+  return (
+    <div>
+      <h3>Weather in {weather.capital} </h3>
+      <p>Temperature {weather.temperature} Celsius</p>
+      <img src={weather.icon} alt="Weather Icon" />
+      <p>Wind {weather.wind} km/h</p>
+    </div>
+  )
+}
+
 const App = () => {
   const [allCountries, setAllCountries] = useState([])
   const [matchCountries, setMatchCountries] = useState([])
+  const [weatherData, setWeatherData] = useState(null)
   const [value, setValue] = useState('')
 
   useEffect(() => {
@@ -59,6 +77,24 @@ const App = () => {
     })
   }, [])
 
+  useEffect(() => {
+    if (matchCountries.length !== 1) {
+      setWeatherData(null)
+      return
+    }
+
+    const country = matchCountries[0]
+    serviceWeather.getByName(country.capital).then((data) => {
+      const weatherObject = {
+        capital: data.location.name,
+        temperature: data.current.temp_c,
+        icon: data.current.condition.icon,
+        wind: data.current.wind_kph,
+      }
+      setWeatherData(weatherObject)
+    })
+  }, [matchCountries])
+
   const handleValueChange = (event) => {
     const currentValue = event.target.value
     setValue(currentValue)
@@ -72,15 +108,21 @@ const App = () => {
     )
   }
 
+  const showCountry = (country) => () => {
+    setValue(country.name)
+    setMatchCountries([country])
+  }
+
   return (
     <>
       <h1>Countries Data</h1>
       <div>
         find countries:{' '}
         <input type="text" value={value} onChange={handleValueChange} />
-        <PossibleCountries countries={matchCountries} />
+        <PossibleCountries countries={matchCountries} onClick={showCountry} />
       </div>
       <CountryInfo countries={matchCountries} />
+      <WeatherInfo weather={weatherData} />
     </>
   )
 }
