@@ -20,4 +20,9 @@ const getBlogsFromDB = async () => {
   return notes.map((note) => note.toJSON())
 }
 
-module.exports = { initialBlogs, getBlogsFromDB }
+const validNonExistentId = () => {
+  const blog = new Blog(initialBlogs[0])
+  return blog._id.toString()
+}
+
+module.exports = { initialBlogs, getBlogsFromDB, validNonExistentId }
