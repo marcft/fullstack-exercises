@@ -1,4 +1,4 @@
-const { test, describe, after, beforeEach } = require('node:test')
+const { test, describe, after, before, beforeEach } = require('node:test')
 const assert = require('node:assert')
 const supertest = require('supertest')
 const mongoose = require('mongoose')
@@ -6,16 +6,31 @@ const mongoose = require('mongoose')
 const helper = require('./test_helper')
 const app = require('../app')
 const Blog = require('../models/blog')
+const User = require('../models/user')
 
 const api = supertest(app)
 
-describe.only('blogs API with initial notes', () => {
+describe('blogs API with initial notes', () => {
+  let rootUserToken = ''
+  before(async () => {
+    await User.deleteMany()
+    for (const user of helper.initialUsers) {
+      await api.post('/api/users').send(user).expect(201)
+    }
+
+    const response = await api.post('/api/login').send(helper.initialUsers[0])
+    rootUserToken = response.body.token
+  })
+
   beforeEach(async () => {
     await Blog.deleteMany()
 
-    const blogObjects = helper.initialBlogs.map((blog) => new Blog(blog))
-    const promiseSaveArray = blogObjects.map((blog) => blog.save())
-    await Promise.all(promiseSaveArray)
+    for (const blog of helper.initialBlogs) {
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .send(blog)
+    }
   })
 
   test('id property present', async () => {
@@ -48,11 +63,12 @@ describe.only('blogs API with initial notes', () => {
 
       const postedBlogResponse = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${rootUserToken}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
-      const { id, ...postedBlog } = postedBlogResponse.body
+      const { id, user, ...postedBlog } = postedBlogResponse.body
       assert.deepStrictEqual(postedBlog, newBlog)
 
       const response = await helper.getBlogsFromDB()
@@ -68,12 +84,12 @@ describe.only('blogs API with initial notes', () => {
 
       const postedBlogResponse = await api
         .post('/api/blogs')
+        .set('Authorization', `Bearer ${rootUserToken}`)
         .send(newBlog)
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
-      const { id, ...postedBlog } = postedBlogResponse.body
-      assert.strictEqual(postedBlog.likes, 0)
+      assert.strictEqual(postedBlogResponse.body.likes, 0)
     })
 
     test('missing properties title or url, bad request', async () => {
@@ -87,8 +103,17 @@ describe.only('blogs API with initial notes', () => {
         author: 'Cool guy',
       }
 
-      await api.post('/api/blogs').send(newBlogWithoutTitle).expect(400)
-      await api.post('/api/blogs').send(newBlogWithoutUrl).expect(400)
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .send(newBlogWithoutTitle)
+        .expect(400)
+
+      await api
+        .post('/api/blogs')
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .send(newBlogWithoutUrl)
+        .expect(400)
     })
   })
 
@@ -96,7 +121,10 @@ describe.only('blogs API with initial notes', () => {
     test('deletion successful', async () => {
       const response = await helper.getBlogsFromDB()
 
-      await api.delete(`/api/blogs/${response[0].id}`).expect(204)
+      await api
+        .delete(`/api/blogs/${response[0].id}`)
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .expect(204)
 
       const response2 = await helper.getBlogsFromDB()
       assert.strictEqual(response2.length, helper.initialBlogs.length - 1)
@@ -105,7 +133,10 @@ describe.only('blogs API with initial notes', () => {
     test('when valid id status 204', async () => {
       const validId = helper.validNonExistentId()
 
-      await api.delete(`/api/blogs/${validId}`).expect(204)
+      await api
+        .delete(`/api/blogs/${validId}`)
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .expect(204)
 
       const response = await helper.getBlogsFromDB()
       assert.strictEqual(response.length, helper.initialBlogs.length)
@@ -113,10 +144,22 @@ describe.only('blogs API with initial notes', () => {
     test('when invalid id status 400', async () => {
       const invalidId = 'clearlyInvalid'
 
-      await api.delete(`/api/blogs/${invalidId}`).expect(400)
+      await api
+        .delete(`/api/blogs/${invalidId}`)
+        .set('Authorization', `Bearer ${rootUserToken}`)
+        .expect(400)
 
       const response = await helper.getBlogsFromDB()
       assert.strictEqual(response.length, helper.initialBlogs.length)
+    })
+
+    test('when token not provided status 401', async () => {
+      const response = await helper.getBlogsFromDB()
+
+      await api.delete(`/api/blogs/${response[0].id}`).expect(401)
+
+      const response2 = await helper.getBlogsFromDB()
+      assert.strictEqual(response2.length, helper.initialBlogs.length)
     })
   })
 
@@ -126,11 +169,13 @@ describe.only('blogs API with initial notes', () => {
 
       const updatedBlog = await api
         .put(`/api/blogs/${response[0].id}`)
+        .set('Authorization', `Bearer ${rootUserToken}`)
         .send({ likes: 99 })
         .expect(200)
 
       assert.deepStrictEqual(updatedBlog.body, {
         ...response[0],
+        user: response[0].user.toString(),
         likes: 99,
       })
     })
@@ -140,6 +185,7 @@ describe.only('blogs API with initial notes', () => {
 
       await api
         .put(`/api/blogs/${response[0].id}`)
+        .set('Authorization', `Bearer ${rootUserToken}`)
         .send({ likes: 'Invalid' })
         .expect(400)
     })
