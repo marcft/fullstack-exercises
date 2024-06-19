@@ -68,6 +68,7 @@ describe('blogs API with initial notes', () => {
         .expect(201)
         .expect('Content-Type', /application\/json/)
 
+      // eslint-disable-next-line no-unused-vars
       const { id, user, ...postedBlog } = postedBlogResponse.body
       assert.deepStrictEqual(postedBlog, newBlog)
 

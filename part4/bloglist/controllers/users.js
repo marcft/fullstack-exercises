@@ -12,13 +12,13 @@ usersRouter.get('/', async (request, response) => {
 })
 
 usersRouter.get('/:id', async (request, response) => {
-  const users = await User.findById(request.params.id).populate('blogs', {
+  const user = await User.findById(request.params.id).populate('blogs', {
     title: 1,
     author: 1,
     url: 1,
   })
-  if (blog) {
-    response.json(blog)
+  if (user) {
+    response.json(user)
   } else {
     response.status(404).end()
   }

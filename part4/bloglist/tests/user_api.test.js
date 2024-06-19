@@ -38,12 +38,12 @@ describe('users API with initial users', () => {
       assert.strictEqual(currentUsers.length, helper.initialUsers.length)
     })
 
-    test('username missing or username missing', async () => {
+    test('username missing or password missing', async () => {
       const notUsernameUser = {
-        password: 'silence',
+        password: 'no-username',
       }
       const notPasswordUser = {
-        password: 'silence',
+        username: 'no-pass',
       }
       await api.post('/api/users').send(notUsernameUser).expect(400)
       await api.post('/api/users').send(notPasswordUser).expect(400)
@@ -71,5 +71,5 @@ describe('users API with initial users', () => {
 })
 
 after(async () => {
-  mongoose.connection.close()
+  await mongoose.connection.close()
 })
