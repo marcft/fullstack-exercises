@@ -35,7 +35,6 @@ const App = () => {
 
   const handleNext = () => {
     let random = Math.trunc(Math.random() * anecdotes.length)
-    if (random == anecdotes.length) random = anecdotes.length - 1
 
     setSelected(random)
   }
