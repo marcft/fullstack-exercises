@@ -2,7 +2,7 @@ import { useState } from 'react'
 
 import loginService from '../services/login'
 
-const LoginForm = ({ setUser }) => {
+const LoginForm = ({ setUser, setErrorMessage }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
@@ -17,7 +17,12 @@ const LoginForm = ({ setUser }) => {
       setUsername('')
       setPassword('')
     } catch (exception) {
-      alert('Wrong credentials')
+      const error = exception.response.data.error
+      setErrorMessage(error)
+
+      setTimeout(() => {
+        setErrorMessage('')
+      }, 5000)
     }
   }
 
@@ -26,7 +31,7 @@ const LoginForm = ({ setUser }) => {
       <h2>Log in to application</h2>
       <form onSubmit={handleLogin}>
         <p>
-          <label htmlFor="username">Username</label>
+          <label htmlFor="username">Username: </label>
           <input
             type="text"
             id="username"
@@ -38,7 +43,7 @@ const LoginForm = ({ setUser }) => {
           />
         </p>
         <p>
-          <label htmlFor="login-pass">Password</label>
+          <label htmlFor="login-pass">Password: </label>
           <input
             type="password"
             id="login-pass"
