@@ -13,6 +13,18 @@ const App = () => {
     blogService.getAll().then((blogs) => setBlogs(blogs))
   }, [])
 
+  useEffect(() => {
+    const loggedUser = window.localStorage.getItem('loggedBlogappUser')
+    if (loggedUser) {
+      setUser(JSON.parse(loggedUser))
+    }
+  }, [])
+
+  const logout = () => {
+    window.localStorage.removeItem('loggedBlogappUser')
+    location.reload()
+  }
+
   if (user === null) {
     return <LoginForm setUser={setUser} />
   }
@@ -20,7 +32,10 @@ const App = () => {
   return (
     <div>
       <h2>Blogs</h2>
-      <p>{user.name} logged in</p>
+      <div>
+        <p style={{ display: 'inline' }}>{user.name} logged in</p>{' '}
+        <button onClick={logout}>logout</button>
+      </div>
       <ul>
         {blogs.map((blog) => (
           <Blog key={blog.id} blog={blog} />
