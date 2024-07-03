@@ -29,10 +29,8 @@ const App = () => {
   }, [])
 
   const addBlog = async (blogObject) => {
-    const token = user.token
-
     try {
-      const returnedBlog = await blogService.create(blogObject, token)
+      const returnedBlog = await blogService.create(blogObject, user.token)
       blogFormRef.current.toggleVisibility()
 
       setSuccessMessage(
@@ -53,6 +51,16 @@ const App = () => {
       }, 5000)
       return false
     }
+  }
+
+  const updateBlog = async (blogObject) => {
+    const { id, ...blogData } = blogObject
+    blogData.user = blogObject.user.id
+    const responseBlog = await blogService.update(id, blogData, user.token)
+
+    setBlogs(
+      blogs.map((blog) => (blog.id == responseBlog.id ? responseBlog : blog))
+    )
   }
 
   const handleLogin = async (userObject) => {
@@ -102,14 +110,14 @@ const App = () => {
         <button onClick={logout}>logout</button>
       </div>
 
-      <Togglable buttonLabel="new note" ref={blogFormRef}>
+      <Togglable buttonLabel="new blog" ref={blogFormRef}>
         <BlogForm createBlog={addBlog} />
       </Togglable>
 
       <hr />
       <ul>
         {blogs.map((blog) => (
-          <Blog key={blog.id} blog={blog} />
+          <Blog key={blog.id} blog={blog} updateBlog={updateBlog} />
         ))}
       </ul>
     </>
