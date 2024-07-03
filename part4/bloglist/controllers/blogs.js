@@ -53,23 +53,13 @@ blogsRouter.delete('/:id', async (request, response) => {
 })
 
 blogsRouter.put('/:id', async (request, response) => {
-  const user = request.user
-  const blog = await Blog.findById(request.params.id)
-  if (!blog) return response.status(404).end()
-
-  if (user.toJSON().id !== blog.user.toString()) {
-    return response
-      .status(401)
-      .json({ error: "cannot modify another user's blog" })
-  }
-
   const updatedBlog = await Blog.findByIdAndUpdate(
     request.params.id,
     request.body,
     {
       new: true,
     },
-  )
+  ).populate('user', { username: 1, name: 1 })
 
   response.json(updatedBlog)
 })
