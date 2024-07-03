@@ -9,7 +9,6 @@ const TogglableWithTitle = (props) => {
 }
 
 const Blog = ({ blog, updateBlog }) => {
-  console.log(blog)
   const blogStyle = {
     paddingTop: 10,
     paddingLeft: 2,
@@ -25,12 +24,12 @@ const Blog = ({ blog, updateBlog }) => {
 
   return (
     <li style={blogStyle}>
-      <TogglableWithTitle title={blog.title}>
+      <TogglableWithTitle title={`${blog.title}, ${blog.author}`}>
         <div>{blog.url}</div>
         <div>
           likes {blog.likes} <button onClick={likeBlog}>like</button>
         </div>
-        <div>{blog.author}</div>
+        <div>{blog.user.name}</div>
       </TogglableWithTitle>
     </li>
   )
