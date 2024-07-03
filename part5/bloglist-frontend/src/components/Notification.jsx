@@ -1,3 +1,5 @@
+import PropTypes from 'prop-types'
+
 const notificationStyles = {
   background: 'lightgrey',
   fontSize: 22,
@@ -19,6 +21,11 @@ const Notification = ({ successMessage, errorMessage }) => {
   if (successMessage) {
     return <p style={successStyle}>{successMessage}</p>
   }
+}
+
+Notification.propTypes = {
+  successMessage: PropTypes.string,
+  errorMessage: PropTypes.string,
 }
 
 export default Notification

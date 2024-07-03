@@ -1,4 +1,5 @@
 import { useState, forwardRef, useImperativeHandle } from 'react'
+import PropTypes from 'prop-types'
 
 // eslint-disable-next-line react/display-name
 const Togglable = forwardRef((props, refs) => {
@@ -29,5 +30,10 @@ const Togglable = forwardRef((props, refs) => {
     </div>
   )
 })
+
+Togglable.propTypes = {
+  buttonLabel: PropTypes.string.isRequired,
+  children: PropTypes.node,
+}
 
 export default Togglable

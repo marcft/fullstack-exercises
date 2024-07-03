@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import PropTypes from 'prop-types'
 
 const TogglableBlog = (props) => {
   const [visible, setVisible] = useState(false)
@@ -14,6 +15,11 @@ const TogglableBlog = (props) => {
       <div style={{ display: visible ? '' : 'none' }}>{props.children}</div>
     </>
   )
+}
+
+TogglableBlog.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node,
 }
 
 const Blog = ({ blog, userUsername, updateBlog, deleteBlog }) => {
@@ -49,6 +55,22 @@ const Blog = ({ blog, userUsername, updateBlog, deleteBlog }) => {
       </TogglableBlog>
     </li>
   )
+}
+
+Blog.propTypes = {
+  blog: PropTypes.shape({
+    title: PropTypes.string.isRequired,
+    author: PropTypes.string,
+    url: PropTypes.string.isRequired,
+    likes: PropTypes.number.isRequired,
+    user: PropTypes.shape({
+      username: PropTypes.string.isRequired,
+      name: PropTypes.string.isRequired,
+    }),
+  }),
+  userUsername: PropTypes.string.isRequired,
+  updateBlog: PropTypes.func.isRequired,
+  deleteBlog: PropTypes.func.isRequired,
 }
 
 export default Blog
