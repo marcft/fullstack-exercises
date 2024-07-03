@@ -59,8 +59,14 @@ const App = () => {
     const responseBlog = await blogService.update(id, blogData, user.token)
 
     setBlogs(
-      blogs.map((blog) => (blog.id == responseBlog.id ? responseBlog : blog))
+      blogs.map((blog) => (blog.id === responseBlog.id ? responseBlog : blog))
     )
+  }
+
+  const deleteBlog = async (blog) => {
+    await blogService.remove(blog.id, user.token)
+
+    setBlogs(blogs.filter((b) => b.id !== blog.id))
   }
 
   const handleLogin = async (userObject) => {
@@ -119,7 +125,13 @@ const App = () => {
         {blogs
           .sort((a, b) => b.likes - a.likes)
           .map((blog) => (
-            <Blog key={blog.id} blog={blog} updateBlog={updateBlog} />
+            <Blog
+              key={blog.id}
+              blog={blog}
+              userUsername={user.username}
+              updateBlog={updateBlog}
+              deleteBlog={deleteBlog}
+            />
           ))}
       </ul>
     </>
