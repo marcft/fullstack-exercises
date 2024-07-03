@@ -1,44 +1,18 @@
 import { useState } from 'react'
 
-import blogsService from '../services/blogs'
-
-const BlogForm = ({
-  token,
-  blogs,
-  setBlogs,
-  setSuccessMessage,
-  setErrorMessage,
-}) => {
+const BlogForm = ({ createBlog }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
 
-  const addBlog = async (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
 
-    try {
-      // If author = '' -> undefined (Will be set by the default parmeter)
-      const checkedAuthor = author || undefined
-      const returnedBlog = await blogsService.create(
-        { title, checkedAuthor, url },
-        token
-      )
-      console.log(returnedBlog.author)
-      setSuccessMessage(
-        `a new blog ${returnedBlog.title} by ${returnedBlog.author} has been added`
-      )
-      setTimeout(() => {
-        setSuccessMessage('')
-      }, 5000)
+    // If author = '' -> undefined (Will be setted by the default parmeter)
+    const checkedAuthor = author || undefined
+    const isCreated = await createBlog({ checkedAuthor, title, url })
 
-      setBlogs(blogs.concat(returnedBlog))
-    } catch (exception) {
-      const error = exception.response.data.error
-      setErrorMessage(error)
-      setTimeout(() => {
-        setErrorMessage('')
-      }, 5000)
-    } finally {
+    if (isCreated) {
       setTitle('')
       setAuthor('')
       setUrl('')
@@ -48,7 +22,7 @@ const BlogForm = ({
   return (
     <>
       <h2>Create new</h2>
-      <form onSubmit={addBlog}>
+      <form onSubmit={handleSubmit}>
         <p>
           <label htmlFor="blog-title">Title: </label>
           <input

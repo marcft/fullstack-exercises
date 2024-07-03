@@ -1,28 +1,17 @@
 import { useState } from 'react'
 
-import loginService from '../services/login'
-
-const LoginForm = ({ setUser, setErrorMessage }) => {
+const LoginForm = ({ loginUser }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
   const handleLogin = async (event) => {
     event.preventDefault()
 
-    try {
-      const user = await loginService.login({ username, password })
+    const isLoggedIn = await loginUser({ username, password })
 
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      setUser(user)
+    if (isLoggedIn) {
       setUsername('')
       setPassword('')
-    } catch (exception) {
-      const error = exception.response.data.error
-      setErrorMessage(error)
-
-      setTimeout(() => {
-        setErrorMessage('')
-      }, 5000)
     }
   }
 
