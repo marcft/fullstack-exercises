@@ -11,7 +11,7 @@ const BlogForm = ({ createBlog }) => {
 
     // If author = '' -> undefined (Will be setted by the default parmeter)
     const checkedAuthor = author || undefined
-    const isCreated = await createBlog({ checkedAuthor, title, url })
+    const isCreated = await createBlog({ author: checkedAuthor, title, url })
 
     if (isCreated) {
       setTitle('')
