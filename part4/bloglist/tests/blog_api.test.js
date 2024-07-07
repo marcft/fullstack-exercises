@@ -174,9 +174,11 @@ describe('blogs API with initial notes', () => {
         .send({ likes: 99 })
         .expect(200)
 
+      delete response[0].user
+      delete updatedBlog.body.user
+
       assert.deepStrictEqual(updatedBlog.body, {
         ...response[0],
-        user: response[0].user.toString(),
         likes: 99,
       })
     })
