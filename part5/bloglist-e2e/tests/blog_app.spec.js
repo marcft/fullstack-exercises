@@ -58,6 +58,18 @@ describe('Blog app', () => {
         await expect(myBlog.getByText('likes 1')).toBeVisible()
       })
 
+      test('a blog can be deleted', async ({ page }) => {
+        await createBlog(page, 'TestBlog', 'Tester', 'http://test.com')
+
+        page.on('dialog', (dialog) => dialog.accept())
+
+        const myBlog = page.locator('li', { hasText: 'TestBlog, Tester' })
+        await myBlog.getByRole('button', { name: 'view' }).click()
+        await myBlog.getByRole('button', { name: 'remove' }).click()
+
+        await expect(myBlog).not.toBeAttached()
+      })
+
       describe('When a blog is created', () => {
         beforeEach(async ({ page }) => {
           await createBlog(page, 'How to blog?', 'Blogger', 'http://blog.com')
