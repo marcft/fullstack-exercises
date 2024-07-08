@@ -49,7 +49,7 @@ const BlogForm = ({ createBlog }) => {
           />
         </p>
         <p>
-          <label htmlFor="blog-title">Url: </label>
+          <label htmlFor="blog-url">Url: </label>
           <input
             type="text"
             id="blog-url"
