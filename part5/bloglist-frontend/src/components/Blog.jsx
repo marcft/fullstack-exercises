@@ -26,7 +26,8 @@ const Blog = ({ blog, userUsername, updateBlog, deleteBlog }) => {
       <TogglableBlog title={`${blog.title}, ${blog.author}`}>
         <div>{blog.url}</div>
         <div>
-          likes {blog.likes} <button onClick={likeBlog}>like</button>
+          likes <span className="likes-value">{blog.likes}</span>{' '}
+          <button onClick={likeBlog}>like</button>
         </div>
         <div>{blog.user.name}</div>
         {userUsername === blog.user.username && (
