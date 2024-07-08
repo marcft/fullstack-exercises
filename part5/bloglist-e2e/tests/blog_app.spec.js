@@ -1,6 +1,7 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
 
 const { loginWith, createBlog } = require('./helper')
+const { name } = require('../playwright.config')
 
 describe('Blog app', () => {
   beforeEach(async ({ page, request }) => {
@@ -45,6 +46,22 @@ describe('Blog app', () => {
         await createBlog(page, 'TestBlog', 'Tester', 'http://test.com')
 
         await expect(page.getByText('TestBlog, Tester')).toBeVisible()
+      })
+
+      test('a blog can be edited (liked)', async ({ page }) => {
+        await createBlog(page, 'TestBlog', 'Tester', 'http://test.com')
+
+        const myBlog = page.locator('li', { hasText: 'TestBlog, Tester' })
+        await myBlog.getByRole('button', { name: 'view' }).click()
+        await myBlog.getByRole('button', { name: 'like' }).click()
+
+        await expect(myBlog.getByText('likes 1')).toBeVisible()
+      })
+
+      describe('When a blog is created', () => {
+        beforeEach(async ({ page }) => {
+          await createBlog(page, 'How to blog?', 'Blogger', 'http://blog.com')
+        })
       })
     })
   })
