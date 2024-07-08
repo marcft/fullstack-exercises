@@ -1,0 +1,19 @@
+{
+  "name": "bloglist-e2e",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:report": "playwright show-report",
+    "test:ui": "playwright test --ui",
+    "test:codegen": "playwright codegen http://localhost:5173/"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "devDependencies": {
+    "@playwright/test": "^1.45.1",
+    "@types/node": "^20.14.10"
+  }
+}
