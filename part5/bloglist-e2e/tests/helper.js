@@ -1,4 +1,5 @@
 const { test, expect, beforeEach, describe } = require('@playwright/test')
+const { name } = require('../playwright.config')
 
 const loginWith = async (page, username, password) => {
   await page.getByLabel('Username:').fill(username)
@@ -12,6 +13,15 @@ const createBlog = async (page, title, author, url) => {
   await page.getByLabel('Author:').fill(author)
   await page.getByLabel('Url:').fill(url)
   await page.getByRole('button', { name: 'create' }).click()
+  await page.getByRole('listitem').getByText(title).waitFor()
 }
 
-module.exports = { loginWith, createBlog }
+const likeBlog = async (blog, times) => {
+  await blog.getByRole('button', { name: 'view' }).click()
+  for (let i = 0; i < times; i++) {
+    await blog.getByRole('button', { name: 'like' }).click()
+    await blog.getByText(`likes ${i + 1}`).waitFor()
+  }
+}
+
+module.exports = { loginWith, createBlog, likeBlog }
