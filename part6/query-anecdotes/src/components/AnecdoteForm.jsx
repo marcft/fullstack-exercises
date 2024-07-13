@@ -18,6 +18,14 @@ const AnecdoteForm = () => {
       })
       setTimeout(() => dispatch({ type: 'REMOVE' }), 5000)
     },
+    onError: ({ response }) => {
+      const error = response.data.error
+      dispatch({
+        type: 'SET',
+        payload: error,
+      })
+      setTimeout(() => dispatch({ type: 'REMOVE' }), 5000)
+    },
   })
 
   const onCreate = (event) => {
