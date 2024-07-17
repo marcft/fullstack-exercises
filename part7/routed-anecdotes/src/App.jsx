@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { BrowserRouter, Routes, Route, useMatch } from 'react-router-dom'
+import { Routes, Route, useMatch } from 'react-router-dom'
 
 import Menu from './components/Menu'
 import CreateNew from './components/CreateNew'
@@ -7,6 +7,7 @@ import About from './components/About'
 import AnecdoteList from './components/AnecdoteList'
 import Footer from './components/Footer'
 import Anecdote from './components/Anecdote'
+import Notification from './components/Notification'
 
 const App = () => {
   const [anecdotes, setAnecdotes] = useState([
@@ -56,8 +57,14 @@ const App = () => {
       <h1>Software anecdotes</h1>
 
       <Menu />
+      <Notification notification={notification} />
       <Routes>
-        <Route path="/create" element={<CreateNew addNew={addNew} />} />
+        <Route
+          path="/create"
+          element={
+            <CreateNew addNew={addNew} setNotification={setNotification} />
+          }
+        />
         <Route path="/about" element={<About />} />
         <Route
           path="/anecdotes/:id"
