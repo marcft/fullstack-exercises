@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useReducer, useRef } from 'react'
 
 import Blog from './components/Blog'
 import Notification from './components/Notification'
@@ -9,11 +9,35 @@ import Togglable from './components/Togglable'
 import blogService from './services/blogs'
 import loginService from './services/login'
 
+const notificationReducer = (state, action) => {
+  switch (action.type) {
+    case 'success':
+      return {
+        successMessage: action.payload,
+        errorMessage: null,
+      }
+
+    case 'error':
+      return {
+        successMessage: null,
+        errorMessage: action.payload,
+      }
+
+    case 'remove':
+      return { successMessage: null, errorMessage: null }
+
+    default:
+      throw Error('Unknown action')
+  }
+}
+
 const App = () => {
   const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [successMessage, setSuccessMessage] = useState('')
+  const [notification, notificationDispatch] = useReducer(notificationReducer, {
+    successMessage: null,
+    errorMessage: null,
+  })
 
   const blogFormRef = useRef()
 
@@ -28,27 +52,29 @@ const App = () => {
     }
   }, [])
 
+  const notify = (message, type) => {
+    notificationDispatch({ type, payload: message })
+    setTimeout(() => {
+      notificationDispatch({ type: 'remove' })
+    }, 5000)
+  }
+
   const addBlog = async (blogObject) => {
     try {
       const returnedBlog = await blogService.create(blogObject, user.token)
       blogFormRef.current.toggleVisibility()
 
-      setSuccessMessage(
-        `a new blog ${returnedBlog.title} by ${returnedBlog.author} has been added`
+      notify(
+        `a new blog ${returnedBlog.title} by ${returnedBlog.author} has been added`,
+        'success',
       )
-      setTimeout(() => {
-        setSuccessMessage('')
-      }, 5000)
 
       setBlogs(blogs.concat(returnedBlog))
       return true
     } catch (exception) {
       const error = exception.response.data.error
+      notify(error, 'error')
 
-      setErrorMessage(error)
-      setTimeout(() => {
-        setErrorMessage('')
-      }, 5000)
       return false
     }
   }
@@ -59,7 +85,7 @@ const App = () => {
     const responseBlog = await blogService.update(id, blogData, user.token)
 
     setBlogs(
-      blogs.map((blog) => (blog.id === responseBlog.id ? responseBlog : blog))
+      blogs.map((blog) => (blog.id === responseBlog.id ? responseBlog : blog)),
     )
   }
 
@@ -77,11 +103,7 @@ const App = () => {
       setUser(user)
     } catch (exception) {
       const error = exception.response.data.error
-      setErrorMessage(error)
-
-      setTimeout(() => {
-        setErrorMessage('')
-      }, 5000)
+      notify(error, 'error')
     }
   }
 
@@ -94,8 +116,8 @@ const App = () => {
     return (
       <>
         <Notification
-          successMessage={successMessage}
-          errorMessage={errorMessage}
+          successMessage={notification.successMessage}
+          errorMessage={notification.errorMessage}
         />
         <LoginForm loginUser={handleLogin} />
       </>
@@ -107,8 +129,8 @@ const App = () => {
       <h2>Blogs</h2>
 
       <Notification
-        successMessage={successMessage}
-        errorMessage={errorMessage}
+        successMessage={notification.successMessage}
+        errorMessage={notification.errorMessage}
       />
 
       <div>
