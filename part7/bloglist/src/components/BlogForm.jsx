@@ -1,23 +1,46 @@
 import { useState } from 'react'
 import PropTypes from 'prop-types'
+import { useQueryClient, useMutation } from '@tanstack/react-query'
 
-const BlogForm = ({ createBlog }) => {
+import blogService from '../services/blogs'
+
+const BlogForm = ({ notify, userToken }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
+
+  const queryClient = useQueryClient()
+
+  const newBlogMutation = useMutation({
+    mutationFn: ({ blog, token }) => blogService.create(blog, token),
+    onSuccess: (newBlog) => {
+      const blogs = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(['blogs'], blogs.concat(newBlog))
+
+      notify(
+        `a new blog ${newBlog.title} by ${newBlog.author} has been added`,
+        'success',
+      )
+
+      setTitle('')
+      setAuthor('')
+      setUrl('')
+    },
+    onError: (exception) => {
+      const error = exception.response.data.error
+      notify(error, 'error')
+    },
+  })
 
   const handleSubmit = async (event) => {
     event.preventDefault()
 
     // If author = '' -> undefined (Will be setted by the default parmeter)
     const checkedAuthor = author || undefined
-    const isCreated = await createBlog({ author: checkedAuthor, title, url })
-
-    if (isCreated) {
-      setTitle('')
-      setAuthor('')
-      setUrl('')
-    }
+    newBlogMutation.mutate({
+      blog: { author: checkedAuthor, title, url },
+      token: userToken,
+    })
   }
 
   return (
@@ -67,7 +90,8 @@ const BlogForm = ({ createBlog }) => {
 }
 
 BlogForm.propTypes = {
-  createBlog: PropTypes.func.isRequired,
+  notify: PropTypes.func.isRequired,
+  userToken: PropTypes.string.isRequired,
 }
 
 export default BlogForm

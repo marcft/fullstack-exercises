@@ -1,4 +1,5 @@
-import { useState, useEffect, useReducer, useRef } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useQuery } from '@tanstack/react-query'
 
 import Blog from './components/Blog'
 import Notification from './components/Notification'
@@ -8,42 +9,17 @@ import Togglable from './components/Togglable'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
-
-const notificationReducer = (state, action) => {
-  switch (action.type) {
-    case 'success':
-      return {
-        successMessage: action.payload,
-        errorMessage: null,
-      }
-
-    case 'error':
-      return {
-        successMessage: null,
-        errorMessage: action.payload,
-      }
-
-    case 'remove':
-      return { successMessage: null, errorMessage: null }
-
-    default:
-      throw Error('Unknown action')
-  }
-}
+import { useNotificationReducer } from './hooks/notificationReducer'
 
 const App = () => {
-  const [blogs, setBlogs] = useState([])
   const [user, setUser] = useState(null)
-  const [notification, notificationDispatch] = useReducer(notificationReducer, {
-    successMessage: null,
-    errorMessage: null,
-  })
-
   const blogFormRef = useRef()
 
-  useEffect(() => {
-    blogService.getAll().then((blogs) => setBlogs(blogs))
-  }, [])
+  const { data: blogs, isPending } = useQuery({
+    queryKey: ['blogs'],
+    queryFn: blogService.getAll,
+    refetchOnWindowFocus: false,
+  })
 
   useEffect(() => {
     const loggedUser = window.localStorage.getItem('loggedBlogappUser')
@@ -52,6 +28,8 @@ const App = () => {
     }
   }, [])
 
+  const [notification, notificationDispatch] = useNotificationReducer()
+
   const notify = (message, type) => {
     notificationDispatch({ type, payload: message })
     setTimeout(() => {
@@ -59,40 +37,20 @@ const App = () => {
     }, 5000)
   }
 
-  const addBlog = async (blogObject) => {
-    try {
-      const returnedBlog = await blogService.create(blogObject, user.token)
-      blogFormRef.current.toggleVisibility()
-
-      notify(
-        `a new blog ${returnedBlog.title} by ${returnedBlog.author} has been added`,
-        'success',
-      )
-
-      setBlogs(blogs.concat(returnedBlog))
-      return true
-    } catch (exception) {
-      const error = exception.response.data.error
-      notify(error, 'error')
-
-      return false
-    }
-  }
-
-  const updateBlog = async (blogObject) => {
-    const { id, ...blogData } = blogObject
+  const updateBlog = async (/* blogObject */) => {
+    /* const { id, ...blogData } = blogObject
     blogData.user = blogObject.user.id
     const responseBlog = await blogService.update(id, blogData, user.token)
 
     setBlogs(
       blogs.map((blog) => (blog.id === responseBlog.id ? responseBlog : blog)),
-    )
+    ) */
   }
 
   const deleteBlog = async (blog) => {
     await blogService.remove(blog.id, user.token)
 
-    setBlogs(blogs.filter((b) => b.id !== blog.id))
+    //setBlogs(blogs.filter((b) => b.id !== blog.id))
   }
 
   const handleLogin = async (userObject) => {
@@ -110,6 +68,10 @@ const App = () => {
   const logout = () => {
     window.localStorage.removeItem('loggedBlogappUser')
     location.reload()
+  }
+
+  if (isPending) {
+    return <div>Loading blogs...</div>
   }
 
   if (user === null) {
@@ -139,7 +101,7 @@ const App = () => {
       </div>
 
       <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <BlogForm createBlog={addBlog} />
+        <BlogForm notify={notify} userToken={user.token} />
       </Togglable>
 
       <hr />
