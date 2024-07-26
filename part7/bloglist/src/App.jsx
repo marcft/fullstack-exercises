@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useRef, useContext } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import Blog from './components/Blog'
@@ -9,10 +9,11 @@ import Togglable from './components/Togglable'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
+import UserContext from './UserContext'
 import { useNotificationReducer } from './hooks/notificationReducer'
 
 const App = () => {
-  const [user, setUser] = useState(null)
+  const [user, userDispatch] = useContext(UserContext)
   const blogFormRef = useRef()
   const queryClient = useQueryClient()
 
@@ -21,13 +22,6 @@ const App = () => {
     queryFn: blogService.getAll,
     refetchOnWindowFocus: false,
   })
-
-  useEffect(() => {
-    const loggedUser = window.localStorage.getItem('loggedBlogappUser')
-    if (loggedUser) {
-      setUser(JSON.parse(loggedUser))
-    }
-  }, [])
 
   const [notification, notificationDispatch] = useNotificationReducer()
 
@@ -72,10 +66,8 @@ const App = () => {
 
   const handleLogin = async (userObject) => {
     try {
-      const user = await loginService.login(userObject)
-
-      window.localStorage.setItem('loggedBlogappUser', JSON.stringify(user))
-      setUser(user)
+      const loggedUser = await loginService.login(userObject)
+      userDispatch({ type: 'set', payload: loggedUser })
     } catch (exception) {
       const error = exception.response.data.error
       notify(error, 'error')
@@ -83,7 +75,7 @@ const App = () => {
   }
 
   const logout = () => {
-    window.localStorage.removeItem('loggedBlogappUser')
+    userDispatch({ type: 'remove' })
     location.reload()
   }
 
@@ -118,7 +110,11 @@ const App = () => {
       </div>
 
       <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <BlogForm notify={notify} userToken={user.token} />
+        <BlogForm
+          notify={notify}
+          userToken={user.token}
+          closeForm={() => blogFormRef.current.toggleVisibility()}
+        />
       </Togglable>
 
       <hr />

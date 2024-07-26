@@ -1,15 +1,17 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 
 import blogService from '../services/blogs'
+import UserContext from '../UserContext'
 
-const BlogForm = ({ notify, userToken }) => {
+const BlogForm = ({ notify, closeForm }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
   const [url, setUrl] = useState('')
 
   const queryClient = useQueryClient()
+  const [user] = useContext(UserContext)
 
   const newBlogMutation = useMutation({
     mutationFn: ({ blog, token }) => blogService.create(blog, token),
@@ -25,6 +27,8 @@ const BlogForm = ({ notify, userToken }) => {
       setTitle('')
       setAuthor('')
       setUrl('')
+
+      closeForm()
     },
     onError: (exception) => {
       const error = exception.response.data.error
@@ -39,7 +43,7 @@ const BlogForm = ({ notify, userToken }) => {
     const checkedAuthor = author || undefined
     newBlogMutation.mutate({
       blog: { author: checkedAuthor, title, url },
-      token: userToken,
+      token: user.token,
     })
   }
 
@@ -91,7 +95,7 @@ const BlogForm = ({ notify, userToken }) => {
 
 BlogForm.propTypes = {
   notify: PropTypes.func.isRequired,
-  userToken: PropTypes.string.isRequired,
+  closeForm: PropTypes.func.isRequired,
 }
 
 export default BlogForm
