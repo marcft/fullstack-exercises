@@ -1,11 +1,11 @@
-import { useRef, useContext } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useContext } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 
-import Blog from './components/Blog'
+import Home from './components/home/Home'
+import Users from './components/users/Users'
 import Notification from './components/Notification'
 import LoginForm from './components/LoginForm'
-import BlogForm from './components/BlogForm'
-import Togglable from './components/Togglable'
 
 import blogService from './services/blogs'
 import loginService from './services/login'
@@ -14,8 +14,6 @@ import { useNotificationReducer } from './hooks/notificationReducer'
 
 const App = () => {
   const [user, userDispatch] = useContext(UserContext)
-  const blogFormRef = useRef()
-  const queryClient = useQueryClient()
 
   const { data: blogs, isPending } = useQuery({
     queryKey: ['blogs'],
@@ -31,38 +29,6 @@ const App = () => {
       notificationDispatch({ type: 'remove' })
     }, 5000)
   }
-
-  const updateBlogMutation = useMutation({
-    mutationFn: ({ id, blog, token }) => blogService.update(id, blog, token),
-    onSuccess: (updatedBlog) => {
-      const blogs = queryClient.getQueryData(['blogs'])
-      queryClient.setQueryData(
-        ['blogs'],
-        blogs.map((blog) => (blog.id == updatedBlog.id ? updatedBlog : blog)),
-      )
-    },
-    onError: (exception) => {
-      const error = exception.response.data.error
-      notify(error, 'error')
-    },
-  })
-
-  const updateBlog = async (blogObject) => {
-    const { id, ...blogData } = blogObject
-    blogData.user = blogObject.user.id
-    updateBlogMutation.mutate({ id, blog: blogData, token: user.token })
-  }
-
-  const deleteBlogMutation = useMutation({
-    mutationFn: ({ id, token }) => blogService.remove(id, token),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['blogs'] })
-    },
-    onError: (exception) => {
-      const error = exception.response.data.error
-      notify(error, 'error')
-    },
-  })
 
   const handleLogin = async (userObject) => {
     try {
@@ -109,33 +75,12 @@ const App = () => {
         <button onClick={logout}>logout</button>
       </div>
 
-      <Togglable buttonLabel="new blog" ref={blogFormRef}>
-        <BlogForm
-          notify={notify}
-          userToken={user.token}
-          closeForm={() => blogFormRef.current.toggleVisibility()}
-        />
-      </Togglable>
-
-      <hr />
-      <ul>
-        {blogs
-          .sort((a, b) => b.likes - a.likes)
-          .map((blog) => (
-            <Blog
-              key={blog.id}
-              blog={blog}
-              userUsername={user.username}
-              updateBlog={updateBlog}
-              deleteBlog={() =>
-                deleteBlogMutation.mutate({
-                  id: blog.id,
-                  token: user.token,
-                })
-              }
-            />
-          ))}
-      </ul>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/users" element={<Users />} />
+          <Route path="/" element={<Home blogs={blogs} notify={notify} />} />
+        </Routes>
+      </BrowserRouter>
     </>
   )
 }
