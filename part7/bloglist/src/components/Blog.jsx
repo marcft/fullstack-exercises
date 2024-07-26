@@ -18,7 +18,7 @@ const Blog = ({ blog, userUsername, updateBlog, deleteBlog }) => {
 
   const removeBlog = () => {
     const isConfirmed = window.confirm(`Remove ${blog.title}, ${blog.author}`)
-    if (isConfirmed) deleteBlog(blog)
+    if (isConfirmed) deleteBlog()
   }
 
   return (

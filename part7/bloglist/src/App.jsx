@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 
 import Blog from './components/Blog'
 import Notification from './components/Notification'
@@ -14,6 +14,7 @@ import { useNotificationReducer } from './hooks/notificationReducer'
 const App = () => {
   const [user, setUser] = useState(null)
   const blogFormRef = useRef()
+  const queryClient = useQueryClient()
 
   const { data: blogs, isPending } = useQuery({
     queryKey: ['blogs'],
@@ -37,21 +38,37 @@ const App = () => {
     }, 5000)
   }
 
-  const updateBlog = async (/* blogObject */) => {
-    /* const { id, ...blogData } = blogObject
+  const updateBlogMutation = useMutation({
+    mutationFn: ({ id, blog, token }) => blogService.update(id, blog, token),
+    onSuccess: (updatedBlog) => {
+      const blogs = queryClient.getQueryData(['blogs'])
+      queryClient.setQueryData(
+        ['blogs'],
+        blogs.map((blog) => (blog.id == updatedBlog.id ? updatedBlog : blog)),
+      )
+    },
+    onError: (exception) => {
+      const error = exception.response.data.error
+      notify(error, 'error')
+    },
+  })
+
+  const updateBlog = async (blogObject) => {
+    const { id, ...blogData } = blogObject
     blogData.user = blogObject.user.id
-    const responseBlog = await blogService.update(id, blogData, user.token)
-
-    setBlogs(
-      blogs.map((blog) => (blog.id === responseBlog.id ? responseBlog : blog)),
-    ) */
+    updateBlogMutation.mutate({ id, blog: blogData, token: user.token })
   }
 
-  const deleteBlog = async (blog) => {
-    await blogService.remove(blog.id, user.token)
-
-    //setBlogs(blogs.filter((b) => b.id !== blog.id))
-  }
+  const deleteBlogMutation = useMutation({
+    mutationFn: ({ id, token }) => blogService.remove(id, token),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['blogs'] })
+    },
+    onError: (exception) => {
+      const error = exception.response.data.error
+      notify(error, 'error')
+    },
+  })
 
   const handleLogin = async (userObject) => {
     try {
@@ -114,7 +131,12 @@ const App = () => {
               blog={blog}
               userUsername={user.username}
               updateBlog={updateBlog}
-              deleteBlog={deleteBlog}
+              deleteBlog={() =>
+                deleteBlogMutation.mutate({
+                  id: blog.id,
+                  token: user.token,
+                })
+              }
             />
           ))}
       </ul>
