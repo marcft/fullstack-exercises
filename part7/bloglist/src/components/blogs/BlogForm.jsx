@@ -2,8 +2,8 @@ import { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 import { useQueryClient, useMutation } from '@tanstack/react-query'
 
-import blogService from '../services/blogs'
-import UserContext from '../UserContext'
+import blogService from '../../services/blogs'
+import UserContext from '../../UserContext'
 
 const BlogForm = ({ notify, closeForm }) => {
   const [title, setTitle] = useState('')

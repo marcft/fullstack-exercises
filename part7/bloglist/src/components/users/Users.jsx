@@ -1,18 +1,7 @@
-import { useQuery } from '@tanstack/react-query'
+import { Link } from 'react-router-dom'
+import PropTypes from 'prop-types'
 
-import userService from '../../services/users'
-
-const Users = () => {
-  const { data: users, isPending } = useQuery({
-    queryKey: ['users'],
-    queryFn: userService.getAll,
-    refetchOnWindowFocus: false,
-  })
-
-  if (isPending) {
-    return <div>Loading users...</div>
-  }
-
+const Users = ({ users }) => {
   return (
     <>
       <h2>Users</h2>
@@ -27,7 +16,9 @@ const Users = () => {
           {users.map((user) => {
             return (
               <tr key={user.id}>
-                <td>{user.name}</td>
+                <td>
+                  <Link to={`/users/${user.id}`}>{user.name}</Link>
+                </td>
                 <td>{user.blogs.length}</td>
               </tr>
             )
@@ -36,6 +27,10 @@ const Users = () => {
       </table>
     </>
   )
+}
+
+Users.propTypes = {
+  users: PropTypes.array.isRequired,
 }
 
 export default Users

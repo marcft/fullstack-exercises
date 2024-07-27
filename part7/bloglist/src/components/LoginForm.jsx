@@ -1,18 +1,26 @@
-import { useState } from 'react'
+import { useContext, useState } from 'react'
 import PropTypes from 'prop-types'
 
-const LoginForm = ({ loginUser }) => {
+import UserContext from '../UserContext'
+import loginService from '../services/login'
+
+const LoginForm = ({ notify }) => {
+  const [, userDispatch] = useContext(UserContext)
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
 
   const handleLogin = async (event) => {
     event.preventDefault()
 
-    const isLoggedIn = await loginUser({ username, password })
+    try {
+      const loggedUser = await loginService.login({ username, password })
+      userDispatch({ type: 'set', payload: loggedUser })
 
-    if (isLoggedIn) {
       setUsername('')
       setPassword('')
+    } catch (exception) {
+      const error = exception.response.data.error
+      notify(error, 'error')
     }
   }
 
@@ -51,7 +59,7 @@ const LoginForm = ({ loginUser }) => {
 }
 
 LoginForm.propTypes = {
-  loginUser: PropTypes.func.isRequired,
+  notify: PropTypes.func.isRequired,
 }
 
 export default LoginForm

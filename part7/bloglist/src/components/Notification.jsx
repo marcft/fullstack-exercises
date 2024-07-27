@@ -10,9 +10,11 @@ const notificationStyles = {
   marginBottom: 10,
 }
 
-const Notification = ({ successMessage, errorMessage }) => {
+const Notification = ({ notificationMessage }) => {
   const errorStyle = { ...notificationStyles, color: 'red' }
   const successStyle = { ...notificationStyles, color: 'green' }
+
+  const { errorMessage, successMessage } = notificationMessage
 
   if (errorMessage) {
     return <p style={errorStyle}>{errorMessage}</p>
@@ -24,8 +26,10 @@ const Notification = ({ successMessage, errorMessage }) => {
 }
 
 Notification.propTypes = {
-  successMessage: PropTypes.string,
-  errorMessage: PropTypes.string,
+  notificationMessage: PropTypes.shape({
+    errorMessage: PropTypes.string,
+    successMessage: PropTypes.string,
+  }),
 }
 
 export default Notification
