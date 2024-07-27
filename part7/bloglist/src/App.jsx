@@ -13,9 +13,10 @@ import blogService from './services/blogs'
 import userService from './services/users'
 import UserContext from './UserContext'
 import { useNotificationReducer } from './hooks/notificationReducer'
+import NavigationMenu from './components/NavigationMenu'
 
 const App = () => {
-  const [user, userDispatch] = useContext(UserContext)
+  const [user] = useContext(UserContext)
   const queryClient = useQueryClient()
   const matchSingleBlogUrl = useMatch('/blogs/:id')
   const navigate = useNavigate()
@@ -73,11 +74,6 @@ const App = () => {
     },
   })
 
-  const logout = () => {
-    userDispatch({ type: 'remove' })
-    location.reload()
-  }
-
   if (user === null) {
     return (
       <>
@@ -97,14 +93,9 @@ const App = () => {
 
   return (
     <>
-      <h2>Blogs</h2>
-
+      <NavigationMenu />
+      <h2>Blogs App</h2>
       <Notification notificationMessage={notification} />
-
-      <div>
-        <p style={{ display: 'inline' }}>{user.name} logged in</p>{' '}
-        <button onClick={logout}>logout</button>
-      </div>
 
       <Routes>
         <Route path="/users/:id" element={<SingleUser users={allUsers} />} />
