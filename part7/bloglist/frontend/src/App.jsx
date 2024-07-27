@@ -110,6 +110,7 @@ const App = () => {
                 navigate('/')
                 deleteBlogMutation.mutate({ id: blog.id, token: user.token })
               }}
+              notify={notify}
             />
           }
         />
