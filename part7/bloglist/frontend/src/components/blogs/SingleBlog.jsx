@@ -29,6 +29,13 @@ const SingleBlog = ({ blog, updateBlog, deleteBlog }) => {
       {user.username === blog.user.username && (
         <button onClick={removeBlog}>remove</button>
       )}
+
+      <h3>Comments</h3>
+      <ul>
+        {blog.comments.map((comment, index) => (
+          <li key={`${index} - ${comment}`}>{comment}</li>
+        ))}
+      </ul>
     </>
   )
 }
@@ -39,6 +46,7 @@ SingleBlog.propTypes = {
     author: PropTypes.string,
     url: PropTypes.string.isRequired,
     likes: PropTypes.number.isRequired,
+    comments: PropTypes.array.isRequired,
     user: PropTypes.shape({
       username: PropTypes.string.isRequired,
       name: PropTypes.string.isRequired,
