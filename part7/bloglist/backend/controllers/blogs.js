@@ -35,6 +35,18 @@ blogsRouter.post('/', async (request, response) => {
   response.status(201).json(savedBlog)
 })
 
+blogsRouter.post('/:id/comments', async (request, response) => {
+  const blog = await Blog.findById(request.params.id)
+  if (!blog) return response.status(204).end()
+
+  // The other bloglist app (part5 & 4) adds blogs without comments
+  if (!blog.comments) blog.comments = []
+  blog.comments = blog.comments.concat(request.body.comment)
+  const savedBlog = await blog.save()
+
+  response.status(201).json(savedBlog)
+})
+
 blogsRouter.delete('/:id', async (request, response) => {
   const user = request.user
   const blog = await Blog.findById(request.params.id)
