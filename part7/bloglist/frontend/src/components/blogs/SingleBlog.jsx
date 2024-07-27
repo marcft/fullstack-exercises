@@ -5,6 +5,8 @@ import { useQueryClient, useMutation } from '@tanstack/react-query'
 import UserContext from '../../UserContext'
 import blogService from '../../services/blogs'
 
+import { Button, Input } from '../../styled-components'
+
 const SingleBlog = ({ blog, updateBlog, deleteBlog, notify }) => {
   const [user] = useContext(UserContext)
   const queryClient = useQueryClient()
@@ -52,16 +54,16 @@ const SingleBlog = ({ blog, updateBlog, deleteBlog, notify }) => {
       <a href={blog.url}>{blog.url}</a>
       <p>
         likes <span className="likes-value">{blog.likes}</span>{' '}
-        <button onClick={likeBlog}>like</button>
+        <Button onClick={likeBlog}>like</Button>
       </p>
       <p>added by {blog.user.name}</p>
       {user.username === blog.user.username && (
-        <button onClick={removeBlog}>remove</button>
+        <Button onClick={removeBlog}>remove</Button>
       )}
 
       <h3>Comments</h3>
       <form onSubmit={handleCommentSubmit}>
-        <input
+        <Input
           type="text"
           name="comment"
           value={comment}
@@ -69,7 +71,7 @@ const SingleBlog = ({ blog, updateBlog, deleteBlog, notify }) => {
             setComment(target.value)
           }}
         />
-        <button type="submit">add comment</button>
+        <Button type="submit">add comment</Button>
       </form>
       <ul>
         {blog.comments.map((comment, index) => (

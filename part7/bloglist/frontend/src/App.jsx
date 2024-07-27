@@ -15,6 +15,8 @@ import UserContext from './UserContext'
 import { useNotificationReducer } from './hooks/notificationReducer'
 import NavigationMenu from './components/NavigationMenu'
 
+import { Title } from './styled-components'
+
 const App = () => {
   const [user] = useContext(UserContext)
   const queryClient = useQueryClient()
@@ -67,6 +69,8 @@ const App = () => {
     mutationFn: ({ id, token }) => blogService.remove(id, token),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['blogs'] })
+      // Refetches so the user has the new blog on Users page
+      queryClient.invalidateQueries({ queryKey: ['users'] })
     },
     onError: (exception) => {
       const error = exception.response.data.error
@@ -76,10 +80,10 @@ const App = () => {
 
   if (user === null) {
     return (
-      <>
+      <main>
         <Notification notificationMessage={notification} />
         <LoginForm notify={notify} />
-      </>
+      </main>
     )
   }
 
@@ -93,29 +97,33 @@ const App = () => {
 
   return (
     <>
-      <NavigationMenu />
-      <h2>Blogs App</h2>
+      <header>
+        <Title>Blogs App</Title>
+        <NavigationMenu />
+      </header>
       <Notification notificationMessage={notification} />
 
-      <Routes>
-        <Route path="/users/:id" element={<SingleUser users={allUsers} />} />
-        <Route path="/users" element={<Users users={allUsers} />} />
-        <Route
-          path="/blogs/:id"
-          element={
-            <SingleBlog
-              blog={blog}
-              updateBlog={updateBlog}
-              deleteBlog={() => {
-                navigate('/')
-                deleteBlogMutation.mutate({ id: blog.id, token: user.token })
-              }}
-              notify={notify}
-            />
-          }
-        />
-        <Route path="/" element={<Blogs blogs={blogs} notify={notify} />} />
-      </Routes>
+      <main>
+        <Routes>
+          <Route path="/users/:id" element={<SingleUser users={allUsers} />} />
+          <Route path="/users" element={<Users users={allUsers} />} />
+          <Route
+            path="/blogs/:id"
+            element={
+              <SingleBlog
+                blog={blog}
+                updateBlog={updateBlog}
+                deleteBlog={() => {
+                  navigate('/')
+                  deleteBlogMutation.mutate({ id: blog.id, token: user.token })
+                }}
+                notify={notify}
+              />
+            }
+          />
+          <Route path="/" element={<Blogs blogs={blogs} notify={notify} />} />
+        </Routes>
+      </main>
     </>
   )
 }

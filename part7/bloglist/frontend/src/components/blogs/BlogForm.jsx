@@ -5,6 +5,8 @@ import { useQueryClient, useMutation } from '@tanstack/react-query'
 import blogService from '../../services/blogs'
 import UserContext from '../../UserContext'
 
+import { Button, Input } from '../../styled-components'
+
 const BlogForm = ({ notify, closeForm }) => {
   const [title, setTitle] = useState('')
   const [author, setAuthor] = useState('')
@@ -18,6 +20,9 @@ const BlogForm = ({ notify, closeForm }) => {
     onSuccess: (newBlog) => {
       const blogs = queryClient.getQueryData(['blogs'])
       queryClient.setQueryData(['blogs'], blogs.concat(newBlog))
+
+      // Refetches so the user has the new blog on Users page
+      queryClient.invalidateQueries({ queryKey: ['users'] })
 
       notify(
         `a new blog ${newBlog.title} by ${newBlog.author} has been added`,
@@ -53,7 +58,7 @@ const BlogForm = ({ notify, closeForm }) => {
       <form onSubmit={handleSubmit}>
         <p>
           <label htmlFor="blog-title">Title: </label>
-          <input
+          <Input
             type="text"
             id="blog-title"
             name="title"
@@ -65,7 +70,7 @@ const BlogForm = ({ notify, closeForm }) => {
         </p>
         <p>
           <label htmlFor="blog-author">Author: </label>
-          <input
+          <Input
             type="text"
             id="blog-author"
             name="author"
@@ -77,7 +82,7 @@ const BlogForm = ({ notify, closeForm }) => {
         </p>
         <p>
           <label htmlFor="blog-url">Url: </label>
-          <input
+          <Input
             type="text"
             id="blog-url"
             name="url"
@@ -87,7 +92,7 @@ const BlogForm = ({ notify, closeForm }) => {
             }}
           />
         </p>
-        <button type="submit">create</button>
+        <Button type="submit">create</Button>
       </form>
     </>
   )

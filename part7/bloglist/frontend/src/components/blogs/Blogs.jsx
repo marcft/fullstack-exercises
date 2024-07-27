@@ -20,8 +20,8 @@ const Blogs = ({ notify, blogs }) => {
           closeForm={() => blogFormRef.current.toggleVisibility()}
         />
       </Togglable>
-
       <hr />
+      <h2>Blogs List</h2>
       <ul>
         {blogs
           .sort((a, b) => b.likes - a.likes)

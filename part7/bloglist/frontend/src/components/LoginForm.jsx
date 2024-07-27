@@ -4,6 +4,8 @@ import PropTypes from 'prop-types'
 import UserContext from '../UserContext'
 import loginService from '../services/login'
 
+import { Button, Input } from '../styled-components'
+
 const LoginForm = ({ notify }) => {
   const [, userDispatch] = useContext(UserContext)
   const [username, setUsername] = useState('')
@@ -30,7 +32,7 @@ const LoginForm = ({ notify }) => {
       <form onSubmit={handleLogin}>
         <p>
           <label htmlFor="username">Username: </label>
-          <input
+          <Input
             type="text"
             id="username"
             name="username"
@@ -42,7 +44,7 @@ const LoginForm = ({ notify }) => {
         </p>
         <p>
           <label htmlFor="login-pass">Password: </label>
-          <input
+          <Input
             type="password"
             id="login-pass"
             name="password"
@@ -52,7 +54,7 @@ const LoginForm = ({ notify }) => {
             }}
           />
         </p>
-        <button type="submit">Login</button>
+        <Button type="submit">Login</Button>
       </form>
     </>
   )

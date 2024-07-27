@@ -2,6 +2,7 @@ import { useContext } from 'react'
 
 import UserContext from '../UserContext'
 import { Link } from 'react-router-dom'
+import { Button } from '../styled-components'
 
 const NavigationMenu = () => {
   const [user, userDispatch] = useContext(UserContext)
@@ -12,11 +13,14 @@ const NavigationMenu = () => {
   }
 
   return (
-    <nav style={{ backgroundColor: 'lightgray' }}>
-      <Link to="/">blogs</Link> <Link to="/users">users</Link>{' '}
-      <p style={{ display: 'inline' }}>{user.name} logged in</p>{' '}
-      <button onClick={logout}>logout</button>
-    </nav>
+    <>
+      <nav>
+        <Link to="/">Blogs</Link> <Link to="/users">Users</Link>{' '}
+      </nav>
+      <p>
+        {user.name} logged in <Button onClick={logout}>logout</Button>
+      </p>
+    </>
   )
 }
 
